@@ -1,0 +1,110 @@
+import nu.studer.gradle.jooq.JooqEdition
+
+plugins {
+	id 'org.springframework.boot' version '2.4.3'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+	id 'nu.studer.jooq' version '5.2.1'
+}
+
+group = 'com.kamilens'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-jooq'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.jooq:jooq'
+	implementation 'org.jooq:jooq-codegen'
+	jooqGenerator 'mysql:mysql-connector-java'
+	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'mysql:mysql-connector-java'
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+jooq {
+	configurations {
+		main {
+			generationTool {
+				logging = org.jooq.meta.jaxb.Logging.WARN
+				jdbc {
+					driver = 'com.mysql.cj.jdbc.Driver'
+					url = 'jdbc:mysql://localhost:3306/jooq?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=UTF-8'
+					user = 'root'
+					password = 'password'
+					properties {
+						property {
+							key = 'PAGE_SIZE'
+							value = 2048
+						}
+					}
+				}
+				generator {
+					name = 'org.jooq.codegen.DefaultGenerator'
+					database {
+						name = 'org.jooq.meta.mysql.MySQLDatabase'
+						includes = 'jooq.*'
+						excludes = ''
+					}
+					target {
+						packageName = 'com.kamilens.jooq'
+					}
+					strategy.name = "org.jooq.codegen.DefaultGeneratorStrategy"
+				}
+			}
+		}
+	}
+}
+
+//jooq {
+//	sample(sourceSets.main) {
+//		jdbc {
+//			driver = 'com.mysql.cj.jdbc.Driver'
+//			url = 'jdbc:mysql://localhost:3306/jooq?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=UTF-8'
+//			user = 'root'
+//			password = 'password'
+//		}
+//		generator {
+//			database() {
+//				name = 'org.jooq.meta.mysql.MySQLDatabase'
+//				inputSchema = 'public'
+//				includes = '.*'
+//			}
+//			target {
+//				packageName = 'com.kamilens.jooq'
+//				directory = 'build/generated/java'
+//			}
+//		}
+//	}
+//}
+//
+//tasks.generateSampleJooqSchemaSource.with {
+//	def out = new ByteArrayOutputStream()
+//	javaExecSpec = { JavaExecSpec s ->
+//		s.standardOutput = out
+//		s.errorOutput = out
+//		s.ignoreExitValue = true
+//		s.jvmArgs '-Xmx512M'
+//	}
+//	execResultHandler = { ExecResult r ->
+//		if (r.exitValue != 0) {
+//			throw new RuntimeException("JOOQ source code generation failed:\n\n" + out.toString())
+//		}
+//	}
+//}
+
+test {
+	useJUnitPlatform()
+}
